@@ -6,6 +6,7 @@ def replaceBadWord(check):
 		elif (i == ">"):
 		
 			storge = storge + "&gt;"
+		# you can add more elif condition here.
 		else:
 			storge = storge + i
 			
