@@ -1,0 +1,62 @@
+import threading
+import clipboard
+import re
+import os
+import json
+import requests
+from tqdm import tqdm
+import time
+
+
+
+
+		
+class thTest:
+	def __init__(self):
+		self.check = True
+		self.ini = 0
+	def translates(self,clipboardText):
+		query = "https://cn.bing.com/dict/search?q=" + clipboardText + "&qs=BD&pq=" + clipboardText + "&sc=8-6&cvid=54C2F553565B4247BC9E9D2621DE3A8C&sp=1"
+		header = {"User-Agent":"Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36"}
+		session = requests.Session()
+		req = session.get(query,headers=header)
+		words = re.findall("<meta name=\"description\"(.*?)/>",req.text)
+		print("translate {}...".format(clipboardText))
+		print(words)
+	def endless(self):
+		oldWord = "hello"
+		clipboard.copy("hi")
+		while (self.check):
+			newWord = clipboard.paste()
+			#newWord = input("words")
+			saveword = newWord #copy one
+	
+			if (oldWord != newWord):
+
+				oldWord = newWord
+				newWord = newWord.replace(' ','')
+				newWrod = newWord.replace('-','')
+				newWrod = newWord.replace('\n','')
+				self.translates(newWord)
+			time.sleep(1)
+			
+	def terminal(self):
+		self.check = False
+	
+	def Th(self):
+		threads = []
+		t = threading.Thread(target=self.endless)
+		threads.append(t)
+		threads[0].start()
+		
+		while(self.check):
+			check = input("input:")
+			if (check == ''):
+				self.terminal()
+			else:
+				pass
+			
+		
+		
+test = thTest()
+test.Th()
