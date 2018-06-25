@@ -7,14 +7,50 @@ import urllib
 import sqlite3
 #urllib.urlretrieve("http://www.gunnerkrigg.com//comics/00000001.jpg", "00000001.jpg")
 class Pdd:
-	def __init__(self,keyWords,subwayID):
+	def __init__(self,keyWords,filename):
 		self.keyWords = keyWords
-		self.subwayID = subwayID
-		self.subway = None
-		self.shopSale = './shop/'
-		
+		self.filename = filename
 		self.header = {"User-Agent":"Mozilla/5.0 (Linux; U; Android 4.4.4; Nexus 5 Build/KTU84P) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"}
 	
+	def createTable(self,id):
+		#create product id info table
+		command = '''create table {} (id INT PRIMARY KEY,goodsid INT,sale INT,np INT,price INT)'''.format(id)
+		conn = sqlite3.connect(self.filename+".db")
+		cursor = conn.cursor()
+		cursor.execute(command)
+		conn.commit()
+		conn.close()
+	def inserData(self,id,dic):
+		
+		conn = sqlite3.connect(self.filename+".db")
+		cursor = conn.cursor()
+		cursor.execute("select max(id) from {}".format(id))
+		c = cursor.fetchall()
+		if (c[0][0] == None):
+			command = '''insert into {} values ({},{},{},{},{})'''.format(id,1,int(dic["goodsid"]),int(dic["sale"]),int(dic["np"]),int(dic["price"]))
+			cursor.execute(command)
+			conn.commit()
+		else:
+			command = '''insert into {} values ({},{},{},{},{})'''.format(id,c[0][0]+1,int(dic["goodsid"]),int(dic["sale"]),int(dic["np"]),int(dic["price"]))
+			cursor.execute(command)
+			conn.commit()
+		conn.close()
+		return 1
+	def checkID(self,id):
+		found = False
+		command = '''select name from sqlite_master where type="table"'''
+		conn = sqlite3.connect(self.filename+".db")
+		cursor = conn.cursor()
+		cursor.execute(command)
+		c = cursor.fetchall()
+		lenth = len(c)
+		count = 0
+		while(count < lenth):
+			if ((id) == ("_"+str(c[count][0]))):
+				found = True
+			count += 1
+		conn.close()
+		return found
 	def connectToWeb(self,url):
 		session = requests.Session()
 		req = session.get(url,headers=self.header)
@@ -39,59 +75,21 @@ class Pdd:
 			NP = rejson.get(items)[counts].get(normal_price)
 			price = rejson.get(items)[counts].get(Price)
 			counts = counts + 1
+			if (self.checkID("_"+str(GID)) == False):
+				#(id PRIMARY KEY,title VARCHAR(255),goodsid INT,sale INT,np INT,price INT)
+				self.createTable("_"+str(GID))
+				#dic["id"],dic["title"],dic["goodsid",dic["sale"],dic["np"],dic["price"]
+				dic = {"goodsid":str(GID),"sale":str(SAL),"np":str(NP),"price":str(price)}
+				self.inserData("_"+str(GID),dic)
 			
-			for i in self.subwayID:
-				if (str(GID) == i.replace('\n','')):
-					f = open('./shop/'+projectName+'/subway/'+self.keyWords.replace('\n','')+'.txt','a')
-					f.write(self.keyWords.replace('\n','') + '\t' + i.replace('\n','') + '\t' + str(counts) + '\n')
-					f.close()
-					print(i,'subway>>>>>',counts)
-			self.saveData(GID,SAL,NP,price)
-		cutline = open('subway.txt','a')
-		cutline.write('----------------------------' + '\n')
-		cutline.close()
+
 			
-		print('Done!...subway:',self.subway)
+class subway:
+	def __init__(self,filename)
+keyw = input("keyword:")
+fn = input("filename")		
 	
-	def checkdata(self,gooID):
-		
 	
-	def saveData(self,Gid,Sale,Nprice,price):
-		
+start = Pdd(keyw,fn)
+start.getProduct()
 
-class databases:
-	'''
-	connect to databases,
-	create table,
-	insert data to table,
-	'''
-	def __init__(self):
-		pass
-	def idinfotable(self,proinfo,id)
-		#create product id info table
-		command = '''create table {} (id PRIMARY KEY,title VARCHAR(255),goodsid INT,sale INT,np INT,price INT)'''.format(id)
-		conn = sqlite3.connect(proinfo+".db")
-		cursor = conn.curosr()
-		cursor.execute(command)
-		conn.commit()
-		conn.close()
-	def idinfoinser(self,data):
-		
-	
-	
-def checkprogram(dir):
-	dirfound = False
-	for i in os.listdir('./shop/'):
-		if (i == dir):
-			dirfound = True
-			break
-	return dirfound 
-
-def start(gkey,gID):
-	while True:
-		timeset = 10 * 60
-		for gk in gkey:
-			spider = Pdd(gk.replace('\n',''),gID)
-			spider.getProduct()
-		sleep(timeset)
-	
