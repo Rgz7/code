@@ -5,6 +5,7 @@ import requests
 from time import sleep,ctime
 import urllib
 import sqlite3
+import time 
 #urllib.urlretrieve("http://www.gunnerkrigg.com//comics/00000001.jpg", "00000001.jpg")
 class Pdd:
 	def __init__(self,keyWords,filename):
@@ -36,6 +37,20 @@ class Pdd:
 			conn.commit()
 		conn.close()
 		return 1
+		
+	def getbigvalue(self,id,sal):
+		conn = sqlite3.connect(self.filename+".db")
+		cursor = conn.cursor()
+		cursor.execute("select max(id) from {}".format(id))
+		c = cursor.fetchall()
+		cursor.execute("select sale from {} where id = {}".format(id,c[0][0]))
+		c = cursor.fetchall()
+		conn.close()
+		c = int(c[0][0])
+		if (int(sal) == c):
+			return False
+		else:
+			return c
 	def checkID(self,id):
 		found = False
 		command = '''select name from sqlite_master where type="table"'''
@@ -46,7 +61,7 @@ class Pdd:
 		lenth = len(c)
 		count = 0
 		while(count < lenth):
-			if ((id) == ("_"+str(c[count][0]))):
+			if ((id) == (str(c[count][0]))):
 				found = True
 			count += 1
 		conn.close()
@@ -75,21 +90,91 @@ class Pdd:
 			NP = rejson.get(items)[counts].get(normal_price)
 			price = rejson.get(items)[counts].get(Price)
 			counts = counts + 1
+			dic = {"goodsid":str(GID),"sale":str(SAL),"np":str(NP),"price":str(price)}
 			if (self.checkID("_"+str(GID)) == False):
 				#(id PRIMARY KEY,title VARCHAR(255),goodsid INT,sale INT,np INT,price INT)
 				self.createTable("_"+str(GID))
 				#dic["id"],dic["title"],dic["goodsid",dic["sale"],dic["np"],dic["price"]
-				dic = {"goodsid":str(GID),"sale":str(SAL),"np":str(NP),"price":str(price)}
 				self.inserData("_"+str(GID),dic)
-			
+				print("NEW LOG!")
+			else:
+				if (self.getbigvalue("_"+str(GID),SAL) == False):
+					pass
+				else:
+					self.inserData("_"+str(GID),dic)
+					print("Sales increase")
 
 			
 class subway:
-	def __init__(self,filename)
-keyw = input("keyword:")
-fn = input("filename")		
+	def __init__(self,filename):
+		self.finename = filename
+	
+	def keylist(self):
+		conn = sqlite3.connect(self.finename+".db")
+		cursor = conn.cursor()
+		cursor.execute("create table keyword (id INT PRIMARY KEY,key TEXT)")
+		conn.commit()
+		ins = input("addkeyword:")
+		while (ins != ""):
+			cursor.execute('''INSERT INTO keyword VALUES (NULL,'{}')'''.format(ins))
+			conn.commit()
+			ins = input("addkeyword:")
+		conn.close()
+	def idlist(self):
+		conn = sqlite3.connect(self.finename+".db")
+		cursor = conn.cursor()
+		cursor.execute("create table idlist (ids INT PRIMARY KEY,id INT)")
+		conn.commit()
+		ins = input("addID:")
+		while (ins != ""):
+			cursor.execute("insert into idlist values(NULL,'{}')".format(ins))
+			conn.commit()
+			ins = input("addID:")
+		conn.close()
+	def selectData(self,args):
+		if (args == "keys"):
+			command = "select key from keyword"
+		elif (args == "idlist"):
+			command = "select id from idlist"
+		conn = sqlite3.connect(self.finename+".db")
+		cursor = conn.cursor()
+		cursor.execute(command)
+		c = cursor.fetchall()
+		conn.close()
+		return c 
+		
+	
+
+
+	
+def main(filename):
+	if ((filename+".db") in os.listdir()):
+		count = 0
+		sb = subway(filename+"sub")
+		keylist = sb.selectData("keys")
+		l = len(keylist)
+		while (count < l):
+			start = Pdd(keylist[count][0],filename)
+			start.getProduct()
+			count += 1
+	else:
+		nb = subway(filename+"sub")
+		nb.keylist()
+		nb.idlist()
+		count = 0
+		sb = subway(filename+"sub")
+		keylist = sb.selectData("keys")
+		l = len(keylist)
+		while (count < l):
+			start = Pdd(keylist[count][0],filename)
+			start.getProduct()
+			count += 1
+fn = input("filename")
+while(True):		
+	main(fn)
+	time.sleep(60 * 5)
 	
 	
-start = Pdd(keyw,fn)
-start.getProduct()
+
+
 
