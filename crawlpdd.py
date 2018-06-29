@@ -15,7 +15,7 @@ class Pdd:
 	
 	def createTable(self,id):
 		#create product id info table
-		command = '''create table {} (id INT PRIMARY KEY,goodsid INT,sale INT,np INT,price INT)'''.format(id)
+		command = '''create table {} (id INTEGER PRIMARY KEY,goodsid INT,sale INT,np INT,price INT)'''.format(id)
 		conn = sqlite3.connect(self.filename+".db")
 		cursor = conn.cursor()
 		cursor.execute(command)
@@ -28,11 +28,11 @@ class Pdd:
 		cursor.execute("select max(id) from {}".format(id))
 		c = cursor.fetchall()
 		if (c[0][0] == None):
-			command = '''insert into {} values ({},{},{},{},{})'''.format(id,1,int(dic["goodsid"]),int(dic["sale"]),int(dic["np"]),int(dic["price"]))
+			command = '''insert into {} values (NULL,{},{},{},{})'''.format(id,int(dic["goodsid"]),int(dic["sale"]),int(dic["np"]),int(dic["price"]))
 			cursor.execute(command)
 			conn.commit()
 		else:
-			command = '''insert into {} values ({},{},{},{},{})'''.format(id,c[0][0]+1,int(dic["goodsid"]),int(dic["sale"]),int(dic["np"]),int(dic["price"]))
+			command = '''insert into {} values (NULL,{},{},{},{})'''.format(id,int(dic["goodsid"]),int(dic["sale"]),int(dic["np"]),int(dic["price"]))
 			cursor.execute(command)
 			conn.commit()
 		conn.close()
@@ -91,6 +91,8 @@ class Pdd:
 			price = rejson.get(items)[counts].get(Price)
 			counts = counts + 1
 			dic = {"goodsid":str(GID),"sale":str(SAL),"np":str(NP),"price":str(price)}
+			loccheck = subway(self.filename+"sub",self.keyWords)
+			loccheck.checkloc("_"+str(GID),counts)
 			if (self.checkID("_"+str(GID)) == False):
 				#(id PRIMARY KEY,title VARCHAR(255),goodsid INT,sale INT,np INT,price INT)
 				self.createTable("_"+str(GID))
@@ -98,21 +100,22 @@ class Pdd:
 				self.inserData("_"+str(GID),dic)
 				print("NEW LOG!")
 			else:
-				if (self.getbigvalue("_"+str(GID),SAL) == False):
+				lastvalue = self.getbigvalue("_"+str(GID),SAL)
+				if (lastvalue == False):
 					pass
 				else:
 					self.inserData("_"+str(GID),dic)
-					print("Sales increase")
+					print(GID,"Sales increase>>",SAL - lastvalue)
 
 			
 class subway:
-	def __init__(self,filename):
+	def __init__(self,filename,kw = None):
 		self.finename = filename
-	
+		self.kw = kw
 	def keylist(self):
 		conn = sqlite3.connect(self.finename+".db")
 		cursor = conn.cursor()
-		cursor.execute("create table keyword (id INT PRIMARY KEY,key TEXT)")
+		cursor.execute("create table keyword (id INTEGER PRIMARY KEY,key TEXT)")
 		conn.commit()
 		ins = input("addkeyword:")
 		while (ins != ""):
@@ -123,13 +126,25 @@ class subway:
 	def idlist(self):
 		conn = sqlite3.connect(self.finename+".db")
 		cursor = conn.cursor()
-		cursor.execute("create table idlist (ids INT PRIMARY KEY,id INT)")
-		conn.commit()
-		ins = input("addID:")
-		while (ins != ""):
-			cursor.execute("insert into idlist values(NULL,'{}')".format(ins))
+		createid = input("subway-id:")
+		while (createid != ""):
+			cursor.execute("create table _{} (id INTEGER PRIMARY KEY,loc INT,kw VARCHAR(255))".format(createid))
 			conn.commit()
-			ins = input("addID:")
+			createid = input("subway-id:")
+		conn.close()
+	
+	def checkloc(self,id,location):
+		conn = sqlite3.connect(self.finename+".db")
+		cursor = conn.cursor()
+		cursor.execute('''select name from sqlite_master where type="table"''')
+		rs = cursor.fetchall()
+		print(rs)
+		for i in rs:
+			print(i[0])
+			print(id)
+			if (i[0] == id):
+				cursor.execute('''INSERT INTO {} VALUES (NULL,'{}','{}')'''.format(id,location,self.kw))
+				conn.commit()
 		conn.close()
 	def selectData(self,args):
 		if (args == "keys"):
@@ -174,6 +189,12 @@ while(True):
 	main(fn)
 	time.sleep(60 * 5)
 	
+	
+
+
+
+
+
 	
 
 
