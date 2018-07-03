@@ -10,7 +10,7 @@ import time
 class Pdd:
 	def __init__(self,keyWords,filename):
 		self.keyWords = keyWords
-		self.filename = filename
+		self.filename = "./db/"+filename
 		self.header = {"User-Agent":"Mozilla/5.0 (Linux; U; Android 4.4.4; Nexus 5 Build/KTU84P) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30"}
 	
 	def createTable(self,id):
@@ -138,10 +138,9 @@ class subway:
 		cursor = conn.cursor()
 		cursor.execute('''select name from sqlite_master where type="table"''')
 		rs = cursor.fetchall()
-		print(rs)
+		
 		for i in rs:
-			print(i[0])
-			print(id)
+
 			if (i[0] == id):
 				cursor.execute('''INSERT INTO {} VALUES (NULL,'{}','{}')'''.format(id,location,self.kw))
 				conn.commit()
@@ -163,9 +162,12 @@ class subway:
 
 	
 def main(filename):
-	if ((filename+".db") in os.listdir()):
+	if("db" not in os.listdir("./")):
+		os.mkdir("db")
+		
+	if ((filename+".db") in os.listdir("./db/")):
 		count = 0
-		sb = subway(filename+"sub")
+		sb = subway("./db/"+filename+"sub")
 		keylist = sb.selectData("keys")
 		l = len(keylist)
 		while (count < l):
@@ -173,11 +175,11 @@ def main(filename):
 			start.getProduct()
 			count += 1
 	else:
-		nb = subway(filename+"sub")
+		nb = subway("./db/"+filename+"sub")
 		nb.keylist()
 		nb.idlist()
 		count = 0
-		sb = subway(filename+"sub")
+		sb = subway("./db/"+filename+"sub")
 		keylist = sb.selectData("keys")
 		l = len(keylist)
 		while (count < l):
@@ -189,10 +191,6 @@ while(True):
 	main(fn)
 	time.sleep(60 * 5)
 	
-	
-
-
-
 
 
 	
