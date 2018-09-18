@@ -33,7 +33,7 @@ class PddSpider:
 		req = session.get(url,headers=self.header)
 		return req.text
 	def getProductDetail(self):
-
+		print("--------get product detail----------")
 		goodsID = "goods_id"
 		goodsNname = "goods_name"
 		goodsDesc = "goods_desc"
@@ -46,12 +46,12 @@ class PddSpider:
 		IU = json.loads(self.pageresult).get(image_url)
 		HIfilename = HI.split('/')[-1]
 		IUfilename = IU.split('/')[-1]
-		
+		print(HIfilename,IUfilename)
 		os.system("python -m wget -o ./{}/{}/{}/{} {}".format(rootFile,projectName,mainFile,HIfilename,HI))
 		os.system("python -m wget -o ./{}/{}/{}/{} {}".format(rootFile,projectName,mainFile,IUfilename,IU))
-		self.saveData(str(GI))
-		self.saveData(GN)
-		self.saveData(GD)
+		self.saveData("<ID>:"+str(GI))
+		self.saveData("<title>:"+GN)
+		self.saveData("<dsc>:"+GD)
 		print(GI,GN,GD)
 		
 			
@@ -77,6 +77,7 @@ class PddSpider:
 			#self.saveData("normalPrice------->>"+str(NP/100))
 			#self.saveData("groupPrice-------->>"+str(GP/100))
 			filetype = TU.split('/')[-1].split('.')[-1]
+			print("get thumb_url")
 			os.system("python -m wget -o ./{}/{}/{}/{}.{} {}".format(rootFile,projectName,skuFile,initcount,filetype,TU))
 			
 				#get lenth of specs key list 
@@ -102,22 +103,17 @@ class PddSpider:
 						if(SV not in value2):
 							value2.append(SV)
 						layercount -=1
-				
-				
-				self.saveData("specKey---->>>"+SK)
-				self.saveData("specValue----->>>"+SV)			
+							
 				print(SK,SV)
-			self.saveData("normalPrice------->>"+str(NP/100))
-			self.saveData("groupPrice-------->>"+str(GP/100))
 			pr = str(NP/100)+":"+str(GP/100)
 			if (pr not in price):
 				price.append(pr)
 			print(TU,NP,GP)
 			initcount = initcount + 1
-		self.saveData(keylist)
-		self.saveData(value1)
-		self.saveData(value2)
-		self.saveData(price)
+		self.saveData("<opt>:"+str(keylist))
+		self.saveData("<value1>:"+str(value1))
+		self.saveData("<value2>:"+str(value2))
+		self.saveData("<price>:"+str(price))
 	def productGallery(self):
 		#get lenth of list
 		ZERO = 0
@@ -129,7 +125,9 @@ class PddSpider:
 			GU = json.loads(self.pageresult).get('gallery')[ZERO].get(galleryurl)
 			listofgallery.append(GU)
 			ZERO = ZERO + 1
+			
 		for galleryLink in listofgallery:
+			print(galleryLink)
 			filetype = galleryLink.split('/')[-1].split('.')[-1]
 			os.system("python -m wget -o ./{}/{}/{}/{}.{} {}".format(rootFile,projectName,galleryFile,imagecount,filetype,galleryLink))
 			print(galleryLink,"save!")
@@ -153,9 +151,9 @@ global galleryFile,skuFile,mainFile,projectName,rootFile
 galleryFile = "Gallery"
 skuFile = "Sku"
 mainFile = "Main"
-rootFile = sys.argv[3]
-projectName = sys.argv[1]
-projectID = sys.argv[2]
+rootFile = sys.argv[1]
+projectName = sys.argv[2]
+projectID = sys.argv[3]
 if(rootFile not in os.listdir("./")):
 	createRootFile(rootFile)
 if(projectID not in os.listdir("./{}".format(rootFile))):
