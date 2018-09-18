@@ -12,12 +12,7 @@ import pymsgbox
 
 #//*[@id="J_ManageBody"]/nav/div/div[4]/ul/li[1]/a/span  20298100  curtain
 #//*[@id="J_ManageBody"]/nav/div/div[4]/ul/li[2]/a/span
-#username = driver.find_element_by_id("usernameId")
-#username.clear()
-#username.send_keys("13434934299")
-#password = driver.find_element_by_id("passwordId")
-#password.clear()
-#password.send_keys("wjb489489...")
+
 
 class upload:
 	
